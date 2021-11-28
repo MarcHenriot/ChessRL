@@ -1,10 +1,11 @@
 from ChessRL.environment import ChessEnv
 from ChessRL.agent import Agent
-from collections import deque
-from tqdm import tqdm
-import numpy as np
+from ChessRL.model import Trainer
 
 
 env = ChessEnv()
 agent = Agent(env)
-agent.learn(10)
+# agent.learn(10)
+
+trainer = Trainer('ChessRL\data\pgns\Berliner.pgn')
+print(len(trainer.dataset))
