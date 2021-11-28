@@ -3,10 +3,11 @@ from ChessRL.environment import ChessEnv
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, Subset
 
 import chess.pgn
 import numpy as np
+import math
 
 
 def conv2d_out_size(in_size, out_c, kernel_size=1, stride=1):
@@ -103,6 +104,28 @@ class Trainer():
         action_space[idxs] = 1
         return action_space
 
+    def init_dataloader(self, batch_size):
+        self.train_loader, self.test_loader = self.train_valid_loaders(self.dataset, batch_size)
+        return self.train_loader, self.test_loader
+
+    def train_valid_loaders(self, dataset, batch_size, train_split=0.8, shuffle=True, seed=None):
+        num_data = len(dataset)
+        indices = np.arange(num_data)
+
+        if shuffle:
+            np.random.seed(seed)
+            np.random.shuffle(indices)
+
+        split = math.floor(train_split * num_data)
+        train_idx, valid_idx = indices[:split], indices[split:]
+
+        train_dataset = Subset(dataset, indices=train_idx)
+        valid_dataset = Subset(dataset, indices=valid_idx)
+
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle)
+        valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=shuffle)
+
+        return train_loader, valid_loader
 
 class TrainderDataset(Dataset):
     def __init__(self, layer_board_array, project_moves_array):
@@ -115,5 +138,5 @@ class TrainderDataset(Dataset):
 
     def __getitem__(self, index):
         board = self.X[index]
-        move = self.X[index]
-        return torch.from_numpy(board), torch.from_numpy(move)
+        move = self.y[index]
+        return torch.from_numpy(board), torch.from_numpy(move).reshape((4096)).argmax()
