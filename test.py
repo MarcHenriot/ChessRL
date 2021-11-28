@@ -8,7 +8,7 @@ env = ChessEnv()
 agent = Agent(env)
 # agent.learn(10)
 
-trainer = Trainer(data_type='Carlsen')
+trainer = Trainer('ChessRL\data\pgns\Carlsen.pgn')
 train_loader, val_loader = trainer.init_dataloader(64)
 
 
