@@ -38,7 +38,8 @@ class CNN(nn.Module):
 
 
 class Trainer():
-    def __init__(self, path):
+    def __init__(self, data_type):
+        path = 'ChessRL\data\pgns\Carlsen.pgn' if data_type == 'Carlsen' else 'ChessRL\data\pgns\Berliner.pgn'
         self.pgn_games = self.load_pgn(path)
         self.layer_board_array, self.project_moves_array = self.creat_moves_arrays()
         self.dataset = TrainderDataset(self.layer_board_array, self.project_moves_array)
