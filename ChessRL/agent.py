@@ -1,4 +1,3 @@
-from chess import Move
 from ChessRL.environment import ChessEnv
 from ChessRL.replayBuffer import ReplayBuffer
 from ChessRL.model import CNN
