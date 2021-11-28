@@ -2,9 +2,7 @@ import chess
 import random
 import numpy as np
 
-
 class ChessEnv():
-
     end_game_rewards = {
         '*':        0.0,  # Game not over yet
         '1/2-1/2':  0.0,  # Draw
