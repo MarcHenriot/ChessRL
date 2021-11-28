@@ -18,7 +18,7 @@ class Agent(object):
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
         # epsilon-greedy exploration strategy
-        self.epsilon = 0
+        self.epsilon = 1
         self.epsilon_min = eps_min
         self.epsilon_decay = eps_decay
 
