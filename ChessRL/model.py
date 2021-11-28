@@ -44,16 +44,16 @@ class Trainer():
         self.dataset = TrainderDataset(self.layer_board_array, self.project_moves_array)
     
     def load_pgn(self, path):
-        pgn = open(path)
-        games = []
-        done = False
-        while not done: 
-            game = chess.pgn.read_game(pgn)
-            if game:
-                games.append(game)
-            else:
-                done = True
-        print(f'{len(games)} games loaded.')
+        with open(path) as pgn: 
+            games = []
+            done = False
+            while not done: 
+                game = chess.pgn.read_game(pgn)
+                if game:
+                    games.append(game)
+                else:
+                    done = True
+            print(f'{len(games)} games loaded.')
         return games
 
     def get_moves(self, game):
