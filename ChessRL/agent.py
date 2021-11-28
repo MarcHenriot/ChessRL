@@ -1,3 +1,4 @@
+from chess import Move
 from ChessRL.environment import ChessEnv
 from ChessRL.replayBuffer import ReplayBuffer
 from ChessRL.model import CNN
@@ -108,14 +109,13 @@ class Agent(object):
         '''
         q_targets_next = self.target_net(next_states).detach().max(1)[0].unsqueeze(1)
         q_targets = rewards + self.gamma * q_targets_next * (1 - dones)
-        q_expected = self.policy_net(states)
-        q_expected = torch.reshape(q_expected, (batch_size, 64, 64))
-        for idx, action in enumerate(actions):
-            q_expected[idx, action[0], action[1]] = q_targets[idx]
-        q_expected = torch.reshape(q_expected, (batch_size, 4096))
-        print(q_expected.size())
         
-        loss = F.mse_loss(q_expected, q_targets)
+        policy_out = self.policy_net(states).reshape((batch_size, 64, 64))
+        q_expected = torch.zeros((batch_size, 1))
+        for batch_idx, (x, y) in enumerate(actions):
+            q_expected[batch_idx] = policy_out[batch_idx, x, y]   
+        
+        loss = F.mse_loss(q_expected.cpu(), q_targets.cpu())
         self.loss_history.append(loss.item())
 
         self.optimizer.zero_grad()

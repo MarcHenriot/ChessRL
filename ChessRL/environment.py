@@ -8,8 +8,8 @@ class ChessEnv():
     end_game_rewards = {
         '*':        0.0,  # Game not over yet
         '1/2-1/2':  0.0,  # Draw
-        '1-0':  +1000.0,  # White wins
-        '0-1':  -1000.0,  # Black wins
+        '1-0':  +10.0,  # White wins
+        '0-1':  -10.0,  # Black wins
     }
 
     mapper = {
