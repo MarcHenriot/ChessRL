@@ -1,6 +1,6 @@
 from ChessRL.environment import ChessEnv
 from ChessRL.replayBuffer import ReplayBuffer
-from ChessRL.model import CNN
+from ChessRL.model import CNN, Trainer
 
 from collections import deque
 from tqdm import tqdm
@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional as F
 
 class Agent(object):
-    def __init__(self, env: ChessEnv, gamma=0.99, lr=0.001, tau=1e-3, eps_min=0.01, eps_decay=0.95, training_interval=4, buffer_size=1e5, checkpoint_path=None):
+    def __init__(self, env: ChessEnv, warmup=False, pgn_path=None, gamma=0.99, lr=0.001, tau=1e-3, eps_min=0.01, eps_decay=0.95, training_interval=4, buffer_size=1e5, checkpoint_path=None):
         # instances of the env
         self.env = env
 
@@ -49,6 +49,12 @@ class Agent(object):
             self.target_net.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             self.epsilon = checkpoint['epsilon']
+
+        if warmup:
+            trainer = Trainer(pgn_path, self.policy_net, max_game=500, device=self.device)
+            warmed_net = trainer.warmup()
+            self.policy_net = warmed_net
+            self.target_net = warmed_net.eval()
         
         # instances of the replayBuffer
         self.memory = ReplayBuffer(env.action_size, int(buffer_size))

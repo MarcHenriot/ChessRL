@@ -9,12 +9,16 @@ import chess.pgn
 import numpy as np
 import math
 
+from tqdm import tqdm
+from poutyne import Model
+
 
 def conv2d_out_size(in_size, out_c, kernel_size=1, stride=1):
     in_size = torch.tensor(in_size)
     out_size = torch.div(in_size - (kernel_size - 1) - 1, stride, rounding_mode='trunc') + 1
     out_size[0] = out_c
     return out_size
+
 
 class CNN(nn.Module):
     def __init__(self, observation_shape, action_size):
@@ -38,19 +42,22 @@ class CNN(nn.Module):
 
 
 class Trainer():
-    def __init__(self, path):
-        self.pgn_games = self.load_pgn(path)
-        self.layer_board_array, self.project_moves_array = self.creat_moves_arrays()
-        self.dataset = TrainderDataset(self.layer_board_array, self.project_moves_array)
+    def __init__(self, path, network, max_game=500, device='cpu'):
+        self.pgn_games = self.load_pgn(path, max_game)
+        self.dataset = TrainderDataset(*self.creat_moves_arrays())
+        self.network = network
+        self.device = device
     
-    def load_pgn(self, path):
+    def load_pgn(self, path, max_game):
+        acc = 0
         with open(path) as pgn: 
             games = []
             done = False
             while not done: 
                 game = chess.pgn.read_game(pgn)
-                if game:
+                if game and acc < max_game:
                     games.append(game)
+                    acc += 1
                 else:
                     done = True
             print(f'{len(games)} games loaded.')
@@ -65,7 +72,7 @@ class Trainer():
     def creat_moves_arrays(self):
         layer_board_array = []
         project_moves_array = []
-        for pgn_game in self.pgn_games:
+        for pgn_game in tqdm(self.pgn_games):
             board = pgn_game.board()
             moves = self.get_moves(pgn_game)
             layer_board_array.append(self.get_layer_board(board))
@@ -104,9 +111,12 @@ class Trainer():
         action_space[idxs] = 1
         return action_space
 
-    def init_dataloader(self, batch_size):
-        self.train_loader, self.test_loader = self.train_valid_loaders(self.dataset, batch_size)
-        return self.train_loader, self.test_loader
+    def init_dataloader(self, batch_size, validation):
+        if validation:
+            self.train_loader, self.test_loader = self.train_valid_loaders(self.dataset, batch_size)
+        else:
+            self.train_loader = DataLoader(self.dataset, batch_size=batch_size, shuffle=True)
+            self.test_loader = None
 
     def train_valid_loaders(self, dataset, batch_size, train_split=0.8, shuffle=True, seed=None):
         num_data = len(dataset)
@@ -126,6 +136,16 @@ class Trainer():
         valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=shuffle)
 
         return train_loader, valid_loader
+
+    def warmup(self, batch_size=64, epochs=20, validation=False):
+        self.init_dataloader(batch_size,validation)
+        model = Model(self.network, 'adam', 'cross_entropy', batch_metrics=['accuracy'], device=self.device)
+        if validation:
+            model.fit_generator(self.train_loader, self.test_loader, epochs=epochs)
+        else:
+            model.fit_generator(self.train_loader, epochs=epochs)
+        return self.network
+
 
 class TrainderDataset(Dataset):
     def __init__(self, layer_board_array, project_moves_array):
