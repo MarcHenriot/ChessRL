@@ -16,6 +16,6 @@ pip install git+https://github.com/PeopleOfPlay/ChessRL.git
 
 # TODO
 
-3. warmup
-4. better heuristic
-6. better opponant
+- better heuristic
+- better opponant
+- better README
