@@ -4,13 +4,13 @@ from ChessRL.util import plot_for_epochs
 
 env = ChessEnv()
 agent = Agent(env)
-agent.learn(400)
+agent.learn(400, time_out=100)
 
 plot_for_epochs(agent.reward_history, 'no_warmup_reward', 'epochs', 'reward', './graphs')
 
 env = ChessEnv()
 agent = Agent(env, warmup=True, pgn_path='ChessRL\data\pgns\Carlsen.pgn')
-agent.learn(400)
+agent.learn(400, time_out=100)
 
 plot_for_epochs(agent.reward_history, 'with_warmup_reward', 'epochs', 'reward', './graphs')
 

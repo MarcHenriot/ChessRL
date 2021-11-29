@@ -141,7 +141,7 @@ class Agent(object):
         for target_param, local_param in zip(self.target_net.parameters(), self.policy_net.parameters()):
             target_param.data.copy_(self.tau * local_param.data + (1.0 - self.tau) * target_param.data)
 
-    def learn(self, epochs, reward_look_back=50, early_stop_val=39, checkpoint_folder_path=None):
+    def learn(self, epochs, reward_look_back=50, early_stop_val=39, checkpoint_folder_path=None, time_out=100000):
         last_reward = deque(maxlen=reward_look_back)
         t = tqdm(range(epochs))
         
@@ -151,7 +151,7 @@ class Agent(object):
             ep_score = 0
             turn_play = 0
             
-            while not done:
+            while not done and turn_play < time_out:
                 action = self.get_action(state)
                 next_state, reward, done, _ = self.env.step(action)
                 
