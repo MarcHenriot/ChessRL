@@ -133,7 +133,7 @@ class Trainer():
         valid_dataset = Subset(dataset, indices=valid_idx)
 
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle)
-        valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=shuffle)
+        valid_loader = DataLoader(valid_dataset, batch_size=batch_size)
 
         return train_loader, valid_loader
 
