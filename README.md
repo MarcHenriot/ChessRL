@@ -17,5 +17,3 @@ pip install git+https://github.com/PeopleOfPlay/ChessRL.git
 # TODO
 
 - better heuristic
-- better opponant
-- better README

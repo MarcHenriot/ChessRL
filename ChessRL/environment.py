@@ -125,7 +125,7 @@ class ChessEnv():
         self.action_space = np.zeros(shape=(64, 64), dtype=np.float32)
 
     def step(self, move):
-        reward = self.win_reward() + self.get_capture_reward(move) # + self.get_placement_reward(move)
+        reward = (self.win_reward() + self.get_capture_reward(move) + self.get_placement_reward(move)) / ChessEnv.piece_value['k']
         self.board.push(move)
         self.opponent_step()
         done = self.board.is_game_over()

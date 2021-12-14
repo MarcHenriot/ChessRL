@@ -1,6 +1,6 @@
 from ChessRL.environment import ChessEnv
 from ChessRL.replayBuffer import ReplayBuffer
-from ChessRL.model import CNN, Trainer
+from ChessRL.model import CNN, ResNet34, ResNet18, Trainer
 
 from collections import deque
 from tqdm import tqdm
@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional as F
 
 class Agent(object):
-    def __init__(self, env: ChessEnv, warmup=False, pgn_path=None, gamma=0.99, lr=0.001, tau=1e-3, eps_min=0.01, eps_decay=0.95, training_interval=4, buffer_size=1e5, checkpoint_path=None):
+    def __init__(self, env: ChessEnv, warmup=False, pgn_path=None, gamma=0.99, lr=1e-3, tau=1e-3, eps_min=0.01, eps_decay=0.99, training_interval=4, buffer_size=1e5, checkpoint_path=None):
         # instances of the env
         self.env = env
 
@@ -38,8 +38,12 @@ class Agent(object):
         self.lr = lr
 
         # instances of the network for current policy and its target
+        '''
         self.policy_net = CNN(env.observation_shape, env.action_size).to(self.device)
         self.target_net = CNN(env.observation_shape, env.action_size).to(self.device).eval() # No need to train target model
+        '''
+        self.policy_net = ResNet18().to(self.device)
+        self.target_net = ResNet18().to(self.device).eval() # No need to train target model
         
         self.optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=lr)
 
