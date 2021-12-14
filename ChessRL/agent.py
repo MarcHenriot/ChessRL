@@ -80,7 +80,7 @@ class Agent(object):
             self.policy_net.eval()
             with torch.no_grad():
                 action_values = self.policy_net(state).cpu()
-                action_values = torch.reshape(action_values.squeeze(), (64, 64)).numpy()
+                action_values = F.softmax(torch.reshape(action_values, (64, 64)), dim=0).numpy()
             self.policy_net.train()
 
             action_space = self.env.project_legal_moves()
@@ -88,15 +88,7 @@ class Agent(object):
             move_from = np.argmax(action_values, axis=None) // 64
             move_to = np.argmax(action_values, axis=None) % 64
             moves = [x for x in self.env.board.generate_legal_moves() if x.from_square == move_from and x.to_square == move_to]
-
-            if len(moves) == 0: # Should not be possible will be remove later
-                move = self.env.get_random_move()
-                move_from = move.from_square
-                move_to = move.to_square
-            else:
-                move = random.choice(moves) 
-            return move
-        
+            return random.choice(moves)
         else:
             return self.env.get_random_move()
 
@@ -138,10 +130,10 @@ class Agent(object):
         self.soft_update() 
 
     def soft_update(self):
-        for target_param, local_param in zip(self.target_net.parameters(), self.policy_net.parameters()):
-            target_param.data.copy_(self.tau * local_param.data + (1.0 - self.tau) * target_param.data)
+        for target_param, policy_param in zip(self.target_net.parameters(), self.policy_net.parameters()):
+            target_param.data.copy_(self.tau * policy_param.data + (1.0 - self.tau) * target_param.data)
 
-    def learn(self, epochs, reward_look_back=50, early_stop_val=39, checkpoint_folder_path=None, time_out=100000):
+    def learn(self, epochs, reward_look_back=50, early_stop_val=1000, checkpoint_folder_path=None, time_out=100000):
         last_reward = deque(maxlen=reward_look_back)
         t = tqdm(range(epochs))
         
@@ -183,3 +175,5 @@ class Agent(object):
                     os.path.join(checkpoint_folder_path, f'checkpoint_{epoch+1}.pt')
                 )
             if current_avg_score >= early_stop_val: break
+
+        if self.env.opponent != 'random': self.env.engine.quit()
