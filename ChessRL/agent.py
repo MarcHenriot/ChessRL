@@ -88,6 +88,7 @@ class Agent(object):
             move_from = np.argmax(action_values, axis=None) // 64
             move_to = np.argmax(action_values, axis=None) % 64
             moves = [x for x in self.env.board.generate_legal_moves() if x.from_square == move_from and x.to_square == move_to]
+            if len(moves) == 0: return random.choice(self.env.legal_moves)
             return random.choice(moves)
         else:
             return self.env.get_random_move()
