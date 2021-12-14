@@ -42,8 +42,8 @@ class Agent(object):
         self.policy_net = CNN(env.observation_shape, env.action_size).to(self.device)
         self.target_net = CNN(env.observation_shape, env.action_size).to(self.device).eval() # No need to train target model
         '''
-        self.policy_net = ResNet18().to(self.device)
-        self.target_net = ResNet18().to(self.device).eval() # No need to train target model
+        self.policy_net = ResNet18(env.observation_shape[0], env.action_size).to(self.device)
+        self.target_net = ResNet18(env.observation_shape[0], env.action_size).to(self.device).eval() # No need to train target model
         
         self.optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=lr)
 
