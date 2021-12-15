@@ -1,3 +1,5 @@
+from logging import NullHandler
+from os import name
 from ChessRL.util import get_layer_board
 
 import chess
@@ -144,6 +146,10 @@ class ChessEnv():
                 opponent_move = self.engine.play(self.board, self.limit_time).move
                 self.board.push(opponent_move)
 
+            elif self.opponent == 'human':
+                opponent_move = self.get_human_move()
+                self.board.push(opponent_move)
+
     def reset(self):
         self.board = chess.Board(self.FEN) if self.FEN else chess.Board()
         self.reset_action_space()
@@ -165,6 +171,23 @@ class ChessEnv():
 
     def get_random_move(self):
         return random.choice(self.legal_moves)
+
+    def get_human_move(self):
+        move = None
+        print("\n\n\n----------------------- \nYou turn to play :-)\n")
+        self.render()
+        print("\na b c d e f g h\n")
+        print("\nMoving a pawn from a2 to a4 will be written a2a4.")
+        while move not in self.legal_moves:
+            move = input("Enter the move you would like to play or \"moves\" to get the list of every  possible moves : ")
+            if move == "moves":
+                for move in self.legal_moves:
+                    print(chess.Move.uci(move), end = ", ")
+                    pass
+                move = input("\n\nEnter a new move : ")
+            move = chess.Move.from_uci(move)
+        return move
+
 
     def project_legal_moves(self):
         self.reset_action_space()
