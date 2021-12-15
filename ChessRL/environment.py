@@ -125,7 +125,7 @@ class ChessEnv():
         self.action_space = np.zeros(shape=(64, 64), dtype=np.float32)
 
     def step(self, move):
-        reward = (self.win_reward() + self.get_capture_reward(move) + self.get_placement_reward(move)) / ChessEnv.piece_value['k']
+        reward = self.get_reward(move)
         self.board.push(move)
         self.opponent_step()
         done = self.board.is_game_over()
@@ -194,7 +194,12 @@ class ChessEnv():
         end_square_index = move.to_square
         row = end_square_index // 8
         col = end_square_index % 8
-        return ChessEnv.piece_weight[piece][row][col] * ChessEnv.piece_value[piece]
+        return ChessEnv.piece_weight[piece][row][col] * ChessEnv.piece_value[piece] / 50
+
+    def get_reward(self, move):
+        W = np.array([1, 0.3, 1])
+        R = np.array([self.win_reward(), self.get_capture_reward(move), self.get_placement_reward(move)])
+        return W @ R.T / ChessEnv.piece_value['k']
 
     @property
     def legal_moves(self):
