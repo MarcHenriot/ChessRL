@@ -5,6 +5,9 @@ import chess.engine
 import random
 import numpy as np
 
+adri_stockfish_path = "/usr/local/Cellar/stockfish/14.1/bin/stockfish"
+marc_stockfish_path = "ChessRL/engine/stockfish_14.1_win_x64_avx2.exe"
+
 class ChessEnv():
     mapper = {
         'p': 0,
@@ -113,7 +116,7 @@ class ChessEnv():
         self.reset_action_space()
         if opponent == 'stockfish':
             self.limit_time = chess.engine.Limit(time=limit_time)
-            self.engine = chess.engine.SimpleEngine.popen_uci('ChessRL/engine/stockfish_14.1_win_x64_avx2.exe')
+            self.engine = chess.engine.SimpleEngine.popen_uci(marc_stockfish_path)
             print('Stockfish loaded !')
 
     def reset_action_space(self):
