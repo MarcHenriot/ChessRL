@@ -1,6 +1,6 @@
 from ChessRL.environment import ChessEnv
 from ChessRL.replayBuffer import ReplayBuffer
-from ChessRL.model import CNN, ResNet34, ResNet18, Trainer
+from ChessRL.model import Trainer, CNN, ResNet34, ResNet18, DuelingCNN, DuelingResNet18, DuelingResNet34
 
 from collections import deque
 from tqdm import tqdm
@@ -36,16 +36,6 @@ class Agent(object):
 
         # instances of the learning_rate
         self.lr = lr
-
-        # instances of the network for current policy and its target
-        '''
-        self.policy_net = CNN(env.observation_shape, env.action_size).to(self.device)
-        self.target_net = CNN(env.observation_shape, env.action_size).to(self.device).eval() # No need to train target model
-        '''
-        self.policy_net = ResNet18(env.observation_shape[0], env.action_size).to(self.device)
-        self.target_net = ResNet18(env.observation_shape[0], env.action_size).to(self.device).eval() # No need to train target model
-        
-        self.optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=lr)
 
         if checkpoint_path:
             checkpoint = torch.load(checkpoint_path)
@@ -97,7 +87,7 @@ class Agent(object):
         else:
             return self.env.get_random_move()
 
-    def step(self, state, action, reward, next_state, done, batch_size=64):
+    def step(self, state, action, reward, next_state, done, batch_size=32):
         '''
         Step the agent, train when needed.
         '''
@@ -106,10 +96,10 @@ class Agent(object):
         self.learn_step_counter = (self.learn_step_counter + 1) % self.training_interval
         
         if self.learn_step_counter == 0 and len(self.memory) > batch_size:
-            self.fit(batch_size)
+            states, actions, rewards, next_states, dones = self.memory.sample(batch_size)
+            self.fit(states, actions, rewards, next_states, dones, batch_size)
 
-    def fit(self, batch_size):
-        states, actions, rewards, next_states, dones = self.memory.sample(batch_size)
+    def fit(self, states, actions, rewards, next_states, dones, batch_size):
         '''
         print(states.size()) torch.Size([N, 8, 8, 8])
         print(actions.size()) torch.Size([N, 2])
@@ -182,3 +172,27 @@ class Agent(object):
             if current_avg_score >= early_stop_val: break
 
         if self.env.opponent != 'random': self.env.engine.quit()
+
+class DQN(Agent):
+    def __init__(self, type_model='ResNet', **args):
+        super(DQN, self).__init__(**args)
+        if type_model == 'CNN':
+            self.policy_net = CNN(self.env.observation_shape, self.env.action_size).to(self.device)
+            self.target_net = CNN(self.env.observation_shape, self.env.action_size).to(self.device).eval() # No need to train target model
+        if type_model == 'ResNet':
+            self.policy_net = ResNet18(self.env.observation_shape[0], self.env.action_size).to(self.device)
+            self.target_net = ResNet18(self.env.observation_shape[0], self.env.action_size).to(self.device).eval() # No need to train target model
+        
+        self.optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=self.lr)
+
+class DDQN(Agent):
+    def __init__(self, type_model='ResNet', **args):
+        super(DDQN, self).__init__(**args)
+        if type_model == 'CNN':
+            self.policy_net = DuelingCNN(self.env.observation_shape, self.env.action_size).to(self.device)
+            self.target_net = DuelingCNN(self.env.observation_shape, self.env.action_size).to(self.device).eval() # No need to train target model
+        if type_model == 'ResNet':
+            self.policy_net = DuelingResNet18(self.env.observation_shape[0], self.env.action_size).to(self.device)
+            self.target_net = DuelingResNet18(self.env.observation_shape[0], self.env.action_size).to(self.device).eval() # No need to train target model
+
+        self.optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=self.lr)

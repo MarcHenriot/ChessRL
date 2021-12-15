@@ -41,6 +41,30 @@ class CNN(nn.Module):
         return self.fc(x)
 
 
+class DuelingCNN(nn.Module):
+    def __init__(self, observation_shape, action_size):
+        super(CNN, self).__init__()
+
+        self.conv1 = nn.Conv2d(observation_shape[0], 16, kernel_size=1)
+        self.bn1 = nn.BatchNorm2d(16)
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=1)
+        self.bn2 = nn.BatchNorm2d(32)
+        self.conv3 = nn.Conv2d(32, 64, kernel_size=1)
+        self.bn3 = nn.BatchNorm2d(64)
+
+        self.value = nn.Linear(64 * 8 * 8, 1)
+        self.advantage = nn.Linear(64 * 8 * 8, action_size)
+            
+    def forward(self, x):
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = F.relu(self.bn2(self.conv2(x)))
+        x = F.relu(self.bn3(self.conv3(x)))
+        x = x.flatten(1)
+        V = self.value(x)
+        A = self.advantage(x)
+        return V + (A - A.mean(dim=1, keepdim=True))
+
+
 class basicBlock(nn.Module):
     def __init__(self, in_channels, intermediate_channels, identity_downsample=None, stride=1):
         super(basicBlock, self).__init__()
@@ -68,7 +92,7 @@ class basicBlock(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, basicBlock, layers, image_channels, num_classes):
+    def __init__(self, layers, image_channels, action_size):
         super(ResNet, self).__init__()
         
         self.in_channels = 64
@@ -83,7 +107,7 @@ class ResNet(nn.Module):
         self.layer4 = self.make_layers(layers[3], intermediate_channels=512, stride=2)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(512 * 4, num_classes)
+        self.fc = nn.Linear(512 * 4, action_size)
 
     def forward(self, x):
         x = F.relu(self.bn1(self.conv1(x)))
@@ -115,6 +139,28 @@ class ResNet(nn.Module):
             layers.append(basicBlock(self.in_channels, intermediate_channels))
 
         return nn.Sequential(*layers)
+
+
+class DuelingResNet(ResNet):
+    def __init__(self, layers, image_channels, action_size):
+        super(DuelingResNet, self).__init__(layers, image_channels, action_size)
+        self.value = nn.Linear(512 * 4, 1)
+        self.advantage = nn.Linear(512 * 4, action_size)
+
+    def forward(self, x):
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = self.maxpool(x)
+        
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+
+        x = self.avgpool(x)
+        x = x.flatten(1)
+        V = self.value(x)
+        A = self.advantage(x)
+        return V + (A - A.mean(dim=1, keepdim=True))
 
 
 class Trainer():
@@ -238,8 +284,14 @@ class TrainderDataset(Dataset):
         return torch.from_numpy(board), torch.from_numpy(move).reshape((4096)).argmax()
 
 
-def ResNet18(img_channel=8, num_classes=64*64):
-    return ResNet(basicBlock, [2, 2, 2, 2], img_channel, num_classes)
+def ResNet18(in_channel=8, action_size=64*64):
+    return ResNet([2, 2, 2, 2], in_channel, action_size)
 
-def ResNet34(img_channel=8, num_classes=64*64):
-    return ResNet(basicBlock, [3, 4, 6, 3], img_channel, num_classes)
+def ResNet34(in_channel=8, action_size=64*64):
+    return ResNet([3, 4, 6, 3], in_channel, action_size)
+
+def DuelingResNet18(in_channel=8, action_size=64*64):
+    return DuelingResNet([2, 2, 2, 2], in_channel, action_size)
+
+def DuelingResNet34(in_channel=8, action_size=64*64):
+    return DuelingResNet([3, 4, 6, 3], in_channel, action_size)
