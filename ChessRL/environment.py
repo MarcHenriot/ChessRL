@@ -8,8 +8,16 @@ import chess.engine
 import random
 import numpy as np
 
-adri_stockfish_path = "ChessRL/engine/stockfish"
-marc_stockfish_path = "ChessRL/engine/stockfish_14.1_win_x64_avx2.exe"
+import sys
+my_os=sys.platform
+
+stockfish_path = ""
+if my_os == 'win32':
+    stockfish_path = "ChessRL/engine/stockfish_14.1_win_x64_avx2.exe"
+elif  my_os == 'darwin':
+    stockfish_path = "ChessRL/engine/stockfish"
+elif my_os == 'linux':
+    stockfish_path = "ChessRL/engine/stockfish_14.1_linux_x64"
 
 class ChessEnv():
     mapper = {
@@ -119,7 +127,7 @@ class ChessEnv():
         self.reset_action_space()
         if opponent == 'stockfish':
             self.limit_time = chess.engine.Limit(time=limit_time)
-            self.engine = chess.engine.SimpleEngine.popen_uci(marc_stockfish_path)
+            self.engine = chess.engine.SimpleEngine.popen_uci(stockfish_path)
             print('Stockfish loaded !')
 
     def reset_action_space(self):
