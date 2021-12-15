@@ -238,6 +238,3 @@ class ChessEnv():
         if self.board.can_claim_draw():
             layer_board[7, :, :] = 1
         return layer_board
-
-
-
