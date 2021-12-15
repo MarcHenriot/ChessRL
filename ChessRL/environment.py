@@ -119,7 +119,7 @@ class ChessEnv():
         self.reset_action_space()
         if opponent == 'stockfish':
             self.limit_time = chess.engine.Limit(time=limit_time)
-            self.engine = chess.engine.SimpleEngine.popen_uci(adri_stockfish_path)
+            self.engine = chess.engine.SimpleEngine.popen_uci(marc_stockfish_path)
             print('Stockfish loaded !')
 
     def reset_action_space(self):
