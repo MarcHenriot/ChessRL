@@ -40,18 +40,20 @@ class Agent(object):
         # instances of the learning_rate
         self.lr = lr
 
+        '''
         if checkpoint_path:
             checkpoint = torch.load(checkpoint_path)
             self.policy_net.load_state_dict(checkpoint['model_state_dict'])
             self.target_net.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-            self.epsilon = checkpoint['epsilon']
+            self.epsilon = checkpoint['epsilon']'''
 
-        if warmup:
+
+        '''if warmup:
             trainer = Trainer(pgn_path, self.policy_net, max_game=500, device=self.device)
             warmed_net = trainer.warmup()
             self.policy_net = warmed_net
-            self.target_net = warmed_net.eval()
+            self.target_net = warmed_net.eval()'''
         
         # instances of the replayBuffer
         self.memory = ReplayBuffer(env.action_size, int(buffer_size))
@@ -149,18 +151,20 @@ class Agent(object):
             state = self.env.reset()
             ep_score = 0
             turn_play = 0
+            
+            #self.env.board.apply_mirror()
 
             while not done and turn_play < time_out:
                 try:
                     action = self.get_bookopening_action(state)
                 except:
                     action = self.get_action(state)
-
+                
                 next_state, reward, done, _ = self.env.step(action)
                 
                 self.step(state, action, reward, next_state, done)
-                
                 state = next_state
+            
                 ep_score += reward
                 turn_play += 1
 
@@ -185,6 +189,9 @@ class Agent(object):
                     }, 
                     os.path.join(checkpoint_folder_path, f'checkpoint_{epoch+1}.pt')
                 )
+
+            print("\n----------\nWINNER IS : \n")
+            self.env.render()
             if current_avg_score >= early_stop_val: break
 
         if self.env.opponent != 'random': self.env.engine.quit()
@@ -210,5 +217,12 @@ class DDQN(Agent):
         if type_model == 'ResNet':
             self.policy_net = DuelingResNet18(self.env.observation_shape[0], self.env.action_size).to(self.device)
             self.target_net = DuelingResNet18(self.env.observation_shape[0], self.env.action_size).to(self.device).eval() # No need to train target model
+        
+        '''
+        if args['warmup']:
+            trainer = Trainer(args['pgn_path'], self.policy_net, max_game=500, device=self.device)
+            warmed_net = trainer.warmup()
+            self.policy_net = warmed_net
+            self.target_net = warmed_net.eval()'''
 
         self.optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=self.lr)

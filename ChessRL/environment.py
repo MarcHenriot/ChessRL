@@ -8,7 +8,7 @@ import chess.engine
 import random
 import numpy as np
 
-adri_stockfish_path = "/usr/local/Cellar/stockfish/14.1/bin/stockfish"
+adri_stockfish_path = "ChessRL/engine/stockfish"
 marc_stockfish_path = "ChessRL/engine/stockfish_14.1_win_x64_avx2.exe"
 
 class ChessEnv():
@@ -28,12 +28,12 @@ class ChessEnv():
     source : https://www.chessprogramming.org/Simplified_Evaluation_Function
     '''
     piece_value = {
-        'p': 10,
-        'n': 32,
-        'b': 33,
-        'r': 50,
-        'q': 90,
-        'k': 2000
+        'p': 100,
+        'n': 320,
+        'b': 330,
+        'r': 500,
+        'q': 900,
+        'k': 20000
     }
 
     end_game_rewards = {
@@ -132,7 +132,12 @@ class ChessEnv():
 
     def step(self, move):
         reward = self.get_reward(move)
+        #print("\n------------------------")
+        #print("AGENT")
+        #self.render()
         self.board.push(move)
+        #print("\nSTOCK")
+        #self.render()
         self.opponent_step()
         done = self.board.is_game_over()
         return self.layer_board, reward, done, None
@@ -233,7 +238,7 @@ class ChessEnv():
         return ChessEnv.piece_weight[piece][row][col] * ChessEnv.piece_value[piece] / 50
 
     def get_reward(self, move):
-        W = np.array([1, 0.8, 1])
+        W = np.array([1, 1, 1])
         R = np.array([self.win_reward(), self.get_capture_reward(move), self.get_placement_reward(move)])
         return W @ R.T / ChessEnv.piece_value['k']
 
