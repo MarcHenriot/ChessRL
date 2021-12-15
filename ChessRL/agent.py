@@ -11,6 +11,9 @@ import os
 import torch
 import torch.nn.functional as F
 
+import chess
+import chess.polyglot
+
 class Agent(object):
     def __init__(self, env: ChessEnv, warmup=False, pgn_path=None, gamma=0.99, lr=1e-3, tau=1e-3, eps_min=0.01, eps_decay=0.99, training_interval=4, buffer_size=1e5, checkpoint_path=None):
         # instances of the env
@@ -87,6 +90,15 @@ class Agent(object):
         else:
             return self.env.get_random_move()
 
+    def get_bookopening_action(self, state):
+        '''
+        Returns the selected action acording to an opening book.
+        '''
+        openingBookPath = "ChessRL/openingBooks/gm2001.bin"
+        with chess.polyglot.open_reader(openingBookPath) as reader:
+            entry = reader.weighted_choice(self.env.board)
+        return entry.move
+
     def step(self, state, action, reward, next_state, done, batch_size=32):
         '''
         Step the agent, train when needed.
@@ -137,9 +149,13 @@ class Agent(object):
             state = self.env.reset()
             ep_score = 0
             turn_play = 0
-            
+
             while not done and turn_play < time_out:
-                action = self.get_action(state)
+                try:
+                    action = self.get_bookopening_action(state)
+                except:
+                    action = self.get_action(state)
+
                 next_state, reward, done, _ = self.env.step(action)
                 
                 self.step(state, action, reward, next_state, done)

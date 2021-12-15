@@ -1,3 +1,6 @@
+from logging import NullHandler
+from os import name
+from shutil import move
 from ChessRL.util import get_layer_board
 
 import chess
@@ -116,7 +119,7 @@ class ChessEnv():
         self.reset_action_space()
         if opponent == 'stockfish':
             self.limit_time = chess.engine.Limit(time=limit_time)
-            self.engine = chess.engine.SimpleEngine.popen_uci(marc_stockfish_path)
+            self.engine = chess.engine.SimpleEngine.popen_uci(adri_stockfish_path)
             print('Stockfish loaded !')
 
     def reset_action_space(self):
@@ -144,10 +147,23 @@ class ChessEnv():
                 opponent_move = self.engine.play(self.board, self.limit_time).move
                 self.board.push(opponent_move)
 
+            elif self.opponent == 'human':
+                opponent_move = self.get_human_move()
+                self.board.push(opponent_move)
+
     def reset(self):
         self.board = chess.Board(self.FEN) if self.FEN else chess.Board()
         self.reset_action_space()
         return self.layer_board
+
+    def get_all_previous_moves(self):
+        '''
+        Return a list of every moves played until now
+        '''
+        previousMoves = []
+        for move in self.board.move_stack:
+            previousMoves.append(move)
+        return previousMoves
 
     def render(self, mode='unicode', turn_number=True):
         if turn_number:
@@ -165,6 +181,23 @@ class ChessEnv():
 
     def get_random_move(self):
         return random.choice(self.legal_moves)
+
+    def get_human_move(self):
+        move = None
+        print("\n\n\n----------------------- \nYou turn to play :-)\n")
+        self.render()
+        print("\na b c d e f g h\n")
+        print("\nMoving a pawn from a2 to a4 will be written a2a4.")
+        while move not in self.legal_moves:
+            move = input("Enter the move you would like to play or \"moves\" to get the list of every  possible moves : ")
+            if move == "moves":
+                for move in self.legal_moves:
+                    print(chess.Move.uci(move), end = ", ")
+                    pass
+                move = input("\n\nEnter a new move : ")
+            move = chess.Move.from_uci(move)
+        return move
+
 
     def project_legal_moves(self):
         self.reset_action_space()
@@ -200,7 +233,7 @@ class ChessEnv():
         return ChessEnv.piece_weight[piece][row][col] * ChessEnv.piece_value[piece] / 50
 
     def get_reward(self, move):
-        W = np.array([1, 0.3, 1])
+        W = np.array([1, 0.8, 1])
         R = np.array([self.win_reward(), self.get_capture_reward(move), self.get_placement_reward(move)])
         return W @ R.T / ChessEnv.piece_value['k']
 
