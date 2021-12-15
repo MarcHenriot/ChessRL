@@ -1,5 +1,6 @@
 from logging import NullHandler
 from os import name
+from shutil import move
 from ChessRL.util import get_layer_board
 
 import chess
@@ -118,7 +119,7 @@ class ChessEnv():
         self.reset_action_space()
         if opponent == 'stockfish':
             self.limit_time = chess.engine.Limit(time=limit_time)
-            self.engine = chess.engine.SimpleEngine.popen_uci(marc_stockfish_path)
+            self.engine = chess.engine.SimpleEngine.popen_uci(adri_stockfish_path)
             print('Stockfish loaded !')
 
     def reset_action_space(self):
@@ -154,6 +155,15 @@ class ChessEnv():
         self.board = chess.Board(self.FEN) if self.FEN else chess.Board()
         self.reset_action_space()
         return self.layer_board
+
+    def get_all_previous_moves(self):
+        '''
+        Return a list of every moves played until now
+        '''
+        previousMoves = []
+        for move in self.board.move_stack:
+            previousMoves.append(move)
+        return previousMoves
 
     def render(self, mode='unicode', turn_number=True):
         if turn_number:
@@ -223,7 +233,7 @@ class ChessEnv():
         return ChessEnv.piece_weight[piece][row][col] * ChessEnv.piece_value[piece] / 50
 
     def get_reward(self, move):
-        W = np.array([1, 0.3, 1])
+        W = np.array([1, 0.8, 1])
         R = np.array([self.win_reward(), self.get_capture_reward(move), self.get_placement_reward(move)])
         return W @ R.T / ChessEnv.piece_value['k']
 

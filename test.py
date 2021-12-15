@@ -2,7 +2,7 @@ from ChessRL.environment import ChessEnv
 from ChessRL.agent import DQN, DDQN
 from ChessRL.util import plot_for_epochs
 
-env = ChessEnv(opponent='human')
+env = ChessEnv(opponent='stockfish')
 agent = DDQN(env=env)
 agent.learn(300, time_out=100)
 
