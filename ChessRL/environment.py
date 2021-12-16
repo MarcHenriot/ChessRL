@@ -45,7 +45,7 @@ class ChessEnv():
     }
 
     end_game_rewards = {
-        '*':        0.0,  # Game not over yet
+        '*':        -1,  # Game not over yet
         '1/2-1/2':  0.0,  # Draw
         '1-0':  piece_value['k'],  # White wins
         '0-1':  -piece_value['k'],  # Black wins
@@ -93,7 +93,7 @@ class ChessEnv():
             [-5,  0,  0,  0,  0,  0,  0, -5],
             [-5,  0,  0,  0,  0,  0,  0, -5],
             [-5,  0,  0,  0,  0,  0,  0, -5],
-            [0,  0,  0,  5,  5,  0,  0,  0]
+            [-2,  0,  0,  5,  5,  0,  0,  -2]
         ]),
         'q': np.array([
             [-20,-10,-10, -5, -5,-10,-10,-20],
