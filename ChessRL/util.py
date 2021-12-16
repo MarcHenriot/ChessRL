@@ -13,7 +13,7 @@ def plot_for_epochs(tab, title, xlabel, ylabel, folder_path=None):
     plt.ylabel(ylabel)
     plt.tight_layout()
     if folder_path: plt.savefig(os.path.join(folder_path, f'{title}.png'))
-    plt.show()
+    plt.close()
 
 def get_layer_board(board, mapper):
         """
