@@ -63,13 +63,13 @@ plot_for_epochs(agent.reward_history, 'DQN Reward by epochs with EngSymDoubleFia
 plot_for_epochs(agent.turnplay_history, 'DQN Turns played by epochs with EngSymDoubleFiachetto warmup', 'epochs', 'nb of turns', './graphs')
 
 env = ChessEnv(opponent='stockfish')
-agent = DQN(env=env, warmup = True, pgn_path='ChessRL/data/pgns/Modern.pgn')
+agent = DDQN(env=env, warmup = True, pgn_path='ChessRL/data/pgns/Modern.pgn')
 agent.learn(3, time_out=100, checkpoint_folder_path="ChessRL/model_saved/ddqn_modern")
 plot_for_epochs(agent.reward_history, 'DDQN Reward by epochs with Modern warmup', 'epochs', 'reward', './graphs')
 plot_for_epochs(agent.turnplay_history, 'DDQN Turns played by epochs with Modern warmup', 'epochs', 'nb of turns', './graphs')
 
 env = ChessEnv(opponent='stockfish')
-agent = DQN(env=env, warmup = True, pgn_path='ChessRL/data/pgns/EngSymDoubleFianchetto.pgn')
+agent = DDQN(env=env, warmup = True, pgn_path='ChessRL/data/pgns/EngSymDoubleFianchetto.pgn')
 agent.learn(3, time_out=100, checkpoint_folder_path="ChessRL/model_saved/ddqn_engsym")
 plot_for_epochs(agent.reward_history, 'DDQN Reward by epochs with EngSymDoubleFiachetto warmup', 'epochs', 'reward', './graphs')
 plot_for_epochs(agent.turnplay_history, 'DDQN Turns played by epochs with EngSymDoubleFiachetto warmup', 'epochs', 'nb of turns', './graphs')
