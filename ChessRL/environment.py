@@ -45,7 +45,7 @@ class ChessEnv():
     }
 
     end_game_rewards = {
-        '*':        -1,  # Game not over yet
+        '*':        0,  # Game not over yet
         '1/2-1/2':  0.0,  # Draw
         '1-0':  piece_value['k'],  # White wins
         '0-1':  -piece_value['k'],  # Black wins
@@ -111,7 +111,7 @@ class ChessEnv():
             [-30,-40,-40,-50,-50,-40,-40,-30],
             [-30,-40,-40,-50,-50,-40,-40,-30],
             [-20,-30,-30,-40,-40,-30,-30,-20],
-            [-10,-20,-20,-20,-20,-20,-20,-10],
+            [-10,-3, -3, -3, -3, -3, -3,-10],
             [20, 20,  0,  0,  0,  0, 20, 20],
             [20, 30, 10,  0,  0, 10, 30, 20]
         ])
@@ -140,12 +140,7 @@ class ChessEnv():
 
     def step(self, move):
         reward = self.get_reward(move)
-        #print("\n------------------------")
-        #print("AGENT")
-        #self.render()
         self.board.push(move)
-        #print("\nSTOCK")
-        #self.render()
         self.opponent_step()
         done = self.board.is_game_over()
         return self.layer_board, reward, done, None
@@ -246,7 +241,7 @@ class ChessEnv():
         return ChessEnv.piece_weight[piece][row][col] * ChessEnv.piece_value[piece] / 50
 
     def get_reward(self, move):
-        W = np.array([1, 1, 1])
+        W = np.array([1, 2, 1])
         R = np.array([self.win_reward(), self.get_capture_reward(move), self.get_placement_reward(move)])
         return W @ R.T / ChessEnv.piece_value['k']
 

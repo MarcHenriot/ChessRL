@@ -3,8 +3,8 @@ from ChessRL.agent import DQN, DDQN
 from ChessRL.util import plot_for_epochs
 
 env = ChessEnv(opponent='stockfish')
-agent = DDQN(env=env)
-agent.learn(300, time_out=100)
+agent = DDQN(env=env, checkpoint_path="ChessRL/model_saved")
+agent.learn(1, time_out=100)
 
 #plot_for_epochs(agent.reward_history, 'no_warmup_reward', 'epochs', 'reward', './graphs')
 
