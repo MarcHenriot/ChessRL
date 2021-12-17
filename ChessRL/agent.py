@@ -183,7 +183,6 @@ class Agent(object):
             if ep_score > max_ep_score:
                 max_ep_score = ep_score
                 idx_max_ep_score = epoch
-                print(max_ep_score, ep_score, idx_max_ep_score)
                 if checkpoint_folder_path: 
                     max_ep_score_policy_dict = self.policy_net.state_dict()
                     max_ep_score_optimizer_dict = self.optimizer.state_dict()
