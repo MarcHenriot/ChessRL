@@ -9,7 +9,7 @@ agent = Agent(env, warmup=True, pgn_path='ChessRL\data\pgns\Carlsen.pgn')
 agent.learn(400, time_out=100)
 
 plot_for_epochs(agent.reward_history, 'with_warmup_reward', 'epochs', 'reward', './graphs')
-'''
+
 
 epoch = 1200
 
@@ -72,3 +72,10 @@ agent = DDQN(env=env, warmup = True, pgn_path='ChessRL/data/pgns/EngSymDoubleFia
 agent.learn(epoch, time_out=100, checkpoint_folder_path="ChessRL/model_saved/ddqn_engsym")
 plot_for_epochs(agent.reward_history, 'DDQN Reward by epochs with EngSymDoubleFiachetto warmup', 'epochs', 'reward', './graphs')
 plot_for_epochs(agent.turnplay_history, 'DDQN Turns played by epochs with EngSymDoubleFiachetto warmup', 'epochs', 'nb of turns', './graphs')
+'''
+
+env = ChessEnv(opponent='stockfish')
+agent = DDQN(env=env, warmup=True, pgn_path='ChessRL/data/pgns/Carlsen.pgn')
+agent.learn(1200, time_out=100)
+plot_for_epochs(agent.reward_history, 'DDQN Reward by epochs with Carlsen last 500 games warmup', 'epochs', 'reward', './graphs')
+plot_for_epochs(agent.turnplay_history, 'DDQN Turns played by epochs with Carlsen last 500 games warmup', 'epochs', 'nb of turns', './graphs')
