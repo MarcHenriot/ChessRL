@@ -259,7 +259,7 @@ class Trainer():
 
         return train_loader, valid_loader
 
-    def warmup(self, batch_size=128, epochs=10, validation=False):
+    def warmup(self, batch_size=128, epochs=50, validation=False):
         self.init_dataloader(batch_size,validation)
         model = Model(self.network, 'adam', 'cross_entropy', batch_metrics=['accuracy'], device=self.device)
         if validation:
